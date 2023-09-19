@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webcam Barcode Reader</title>
+  </head>
+  <body>
+    <video id="webcamVideo" autoplay></video>
+    <canvas id="webcamCanvas"></canvas>
+    <div id="barcodeResult"></div>
+    <script>
+      const videoElement = document.getElementById("webcamVideo");
+      const canvasElement = document.getElementById("webcamCanvas");
+      const barcodeResult = document.getElementById("barcodeResult");
+
+      async function startWebcam() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          videoElement.srcObject = stream;
+          detectBarcode();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      async function detectBarcode() {
+        console.log("detect barcode");
+        const stream = videoElement.srcObject;
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const detector = new BarcodeDetector();
+
+        try {
+          const frame = await imageCapture.grabFrame();
+          canvasElement.width = frame.width;
+          canvasElement.height = frame.height;
+          const barcodes = await detector.detect(frame);
+
+          if (barcodes.length > 0) {
+            const barcodeData = barcodes[0].rawValue;
+            barcodeResult.textContent = `Detected: ${barcodeData}`;
+            console.log(`Detected: ${barcodeData}`);
+          } else {
+          }
+          requestAnimationFrame(detectBarcode);
+        } catch (e) {
+          barcodeResult.textContent = `error: ${e}`;
+          console.error(e);
+        }
+      }
+
+      window.addEventListener("load", startWebcam);
+    </script>
+  </body>
+</html>
