@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barcode Detection</title>
+  </head>
+  <body>
+    <input
+      type="file"
+      accept="image/*"
+      id="barcodeInput"
+      onchange="detectBarcode()"
+    />
+    <div id="barcodeResult"></div>
+    <img id="barcodeImage" style="width: 50vw" />
+
+    <script>
+      async function detectBarcode() {
+        const barcodeInput = document.getElementById("barcodeInput");
+        const barcodeResult = document.getElementById("barcodeResult");
+        const imageDiv = document.getElementById("image");
+        const barcodeImage = document.getElementById("barcodeImage");
+
+        if ("BarcodeDetector" in window) {
+          try {
+            const detector = new BarcodeDetector();
+            const imageFile = barcodeInput.files[0];
+            if (imageFile) {
+              barcodeImage.src = URL.createObjectURL(imageFile);
+              await barcodeImage.decode();
+              const barcodes = await detector.detect(barcodeImage);
+              if (barcodes.length > 0) {
+                const barcodesData = barcodes[0].rawValue;
+                barcodeResult.textContent = `Detected: ${barcodesData}`;
+              } else {
+                barcodeResult.textContent = `no barcode detected`;
+              }
+            }
+          } catch (e) {
+            barcodeResult.textContent = `error: ${e}`;
+          }
+        } else {
+          barcodeResult.textContent = `BarcodeDetector API not supported`;
+        }
+      }
+    </script>
+  </body>
+</html>
